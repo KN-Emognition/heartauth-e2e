@@ -1,0 +1,229 @@
+openapi: 3.0.3
+info:
+  title: ECG Orchestrator API — External
+  version: 1.0.0
+  description: Endpoints called by the mobile app.
+tags:
+  - name: Pairing
+    description: Device enrollment from the mobile app.
+  - name: Challenge
+    description: Completing login-time challenges from the device.
+  - name: Health
+    description: Administrative endpoints.
+  - name: WellKnown
+    description: Administrative endpoints.
+paths:
+  /.well-known/jwks.json:
+    get:
+      tags:
+        - WellKnown
+      summary: Get JSON Web Key Set (JWKS)
+      operationId: getWellKnown
+      responses:
+        '200':
+          description: JWKS document
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JwkSet"
+  /actuator/health:
+    get:
+      tags:
+        - Health
+      summary: Get overall application health
+      description: Returns the aggregated health status of the application.
+      operationId: getHealth
+      responses:
+        '200':
+          description: Application is healthy
+  /external/v1/pairing/init:
+    post:
+      operationId: initPairing
+      tags:
+        - Pairing
+      summary: Begin device pairing using a one-time pairing JWT from Keycloak.
+      description: |
+        Mobile app calls this after scanning the QR on the Keycloak Required Action page.
+        Returns a fresh nonce and creates pairing state keyed by JWT `jti`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InitPairingRequest'
+      responses:
+        '200':
+          description: Pairing initiated; device must confirm proof-of-possession.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitPairingResponse'
+  /external/v1/pairing/complete:
+    post:
+      operationId: completePairing
+      tags:
+        - Pairing
+      summary: Confirm device pairing by proving possession of the generated private key.
+      description: |
+        Device signs the server-provided nonce (and context) with its hardware-backed
+        private key. On success, orchestrator persists device metadata and marks `jti` as linked.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompletePairingRequest'
+      responses:
+        '204':
+          description: Pairing outcome recorded.
+
+  /external/v1/challenge/{id}/complete:
+    post:
+      operationId: completeChallenge
+      tags:
+        - Challenge
+      summary: Complete a challenge from the device after ECG pass and signature verification.
+      description: |
+        Mobile app posts a signed assertion proving possession of the device key.
+        Server validates signature (using stored public key), nonce, and policy.
+      parameters:
+        - $ref: '#/components/parameters/ChallengeIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompleteChallengeRequest'
+      responses:
+        '204':
+          description: Challenge outcome recorded.
+components:
+  parameters:
+    ChallengeIdParam:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  schemas:
+    JwkSet:
+      type: object
+      required: [ keys ]
+      properties:
+        keys:
+          type: array
+          items:
+            $ref: '#/components/schemas/ECJwk'
+    ECJwk:
+      type: object
+      required: [ kty, crv, x, y ]
+      properties:
+        kty:
+          type: string
+          enum: [ EC ]
+        crv:
+          type: string
+          enum: [ P-256, P-384, P-521 ]
+        x:
+          type: string
+          pattern: '^[A-Za-z0-9_-]+$'
+        y:
+          type: string
+          pattern: '^[A-Za-z0-9_-]+$'
+        kid: { type: string }
+        use: { type: string, enum: [ sig, enc ] }
+        alg: { type: string }
+        x5u: { type: string, format: uri }
+        x5c: { type: array, items: { type: string } }
+        x5t: { type: string }
+        "x5t#S256": { type: string }
+    InitPairingRequest:
+      type: object
+      required:
+        - deviceId
+        - displayName
+        - publicKey
+        - fcmToken
+        - platform
+      properties:
+        deviceId:
+          type: string
+        displayName:
+          type: string
+        publicKey:
+          type: string
+        fcmToken:
+          type: string
+        platform:
+          $ref: '#/components/schemas/Platform'
+        osVersion:
+          type: string
+        model:
+          type: string
+    Platform:
+      type: string
+      enum:
+        - ANDROID
+        - IOS
+    InitPairingResponse:
+      type: object
+      required:
+        - expiresAt
+        - nonce
+      properties:
+        nonce:
+          type: string
+        expiresAt:
+          type: integer
+          format: int64
+    CompletePairingRequest:
+      type: object
+      required:
+        - dataToken
+        - signature
+      properties:
+        dataToken:
+          type: string
+          description: |
+            JWT encrypted with ecgData
+        signature:
+          type: string
+    CompleteChallengeRequest:
+      type: object
+      required:
+        - dataToken
+        - signature
+      properties:
+        dataToken:
+          type: string
+          description: |
+            JWT encrypted with ecgData
+        signature:
+          type: string
+          description: |
+            Signed nonce
+    DeviceInfo:
+      type: object
+      required:
+        - deviceId
+        - displayName
+        - publicKey
+        - fcmToken
+        - createdAt
+      properties:
+        deviceId:
+          type: string
+        displayName:
+          type: string
+        publicKey:
+          type: string
+        fcmToken:
+          type: string
+        createdAt:
+          type: integer
+          format: int64
+    EncryptionAlgo:
+      type: string
+      enum:
+        - ES256

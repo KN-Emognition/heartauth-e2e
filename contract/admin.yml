@@ -1,0 +1,41 @@
+openapi: 3.0.3
+info:
+  title: HeartAuth Orchestrator – Tenant Registration API
+  version: 1.0.0
+tags:
+  - name: Tenants
+    description: Tenant lifecycle operations
+paths:
+  /admin/v1/tenants:
+    post:
+      tags:
+        - Tenants
+      summary: Register a new tenant (strict)
+      description: Creates a new tenant.
+      operationId: registerTenant
+      responses:
+        '201':
+          description: Tenant created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateTenantResponse'
+              examples:
+                created:
+                  value:
+                    id: "a9b2f1a6-2a36-4f1f-bc3b-9d63f5a8f5a2"
+                    apiKey: "a9b2f1a6-2a36-4f1f-bc3b-9d63f5a8f5a2"
+components:
+  schemas:
+    CreateTenantResponse:
+      type: object
+      required:
+        - id
+        - apiKey
+      properties:
+        id:
+          type: string
+          format: uuid
+        apiKey:
+          type: string
+          format: uuid

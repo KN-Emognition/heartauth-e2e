@@ -1,0 +1,223 @@
+openapi: 3.0.3
+info:
+  title: Heartauth Models
+  version: 1.0.0
+  description: Schemas defining key classes in Heartauth domain.
+paths: { }
+components:
+  schemas:
+    FlowStatus:
+      type: string
+      description: Lifecycle state of a pairing/challenge flow.
+      enum: [ CREATED, PENDING, APPROVED, DENIED, EXPIRED, NOT_FOUND ]
+    Platform:
+      type: string
+      description: Mobile platform of the paired device.
+      enum: [ ANDROID, IOS ]
+    MessageType:
+      type: string
+      description: Type of push message.
+      enum: [ CHALLENGE ]
+    IdentifiableUser:
+      type: object
+      description: Shared identity of a user within a tenant.
+      required: [ userId, tenantId ]
+      properties:
+        userId:
+          type: string
+          format: uuid
+          description: User identifier.
+          example: "8d8a4b2e-1a56-4a3a-8c08-9c3c5a2d5c01"
+        tenantId:
+          type: string
+          format: uuid
+          description: Tenant identifier.
+          example: "4e2d7a7a-3b6a-4d5a-8b1a-2f1a9c0a1e2f"
+    ChallengeState:
+      allOf:
+        - $ref: '#/components/schemas/IdentifiableUser'
+        - type: object
+          description: Runtime state of an ECG challenge flow.
+          required: [ status, createdAt, ttlSeconds ]
+          properties:
+            status:
+              $ref: '#/components/schemas/FlowStatus'
+            reason:
+              type: string
+              description: Optional human-readable reason for non-success states.
+              example: "User denied on device"
+            ephemeralPrivateKey:
+              type: string
+              description: Ephemeral private key (internal use only).
+              writeOnly: true
+              example: "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0B...\n-----END PRIVATE KEY-----"
+            userPublicKey:
+              type: string
+              description: User's registered public key (PEM or JWK).
+              example: "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0B...\n-----END PUBLIC KEY-----"
+            nonceB64:
+              type: string
+              description: Base64-encoded nonce used in the challenge.
+              example: "k0b1c2d3e4f5g6h7i8j9=="
+            exp:
+              type: integer
+              format: int64
+              description: Expiration time as UNIX epoch seconds.
+              example: 1730563200
+            createdAt:
+              type: integer
+              format: int64
+              description: Creation time as UNIX epoch seconds.
+              example: 1730562900
+            ttlSeconds:
+              type: integer
+              format: int64
+              minimum: 1
+              description: Time-to-live for the challenge in seconds.
+              example: 120
+    PairingState:
+      allOf:
+        - $ref: '#/components/schemas/IdentifiableUser'
+        - type: object
+          description: Runtime state of a device pairing flow.
+          required: [ status, createdAt, ttlSeconds ]
+          properties:
+            status:
+              $ref: '#/components/schemas/FlowStatus'
+            reason:
+              type: string
+              description: Optional human-readable reason for non-success states.
+              example: "TTL exceeded"
+            deviceId:
+              type: string
+              description: Server-assigned or client-reported device identifier.
+              example: "a1b2c3d4e5f6"
+            displayName:
+              type: string
+              description: Friendly device name shown to the user.
+              example: "Alice’s Pixel 8"
+            publicKey:
+              type: string
+              description: Device public key (PEM or JWK).
+              example: "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0B...\n-----END PUBLIC KEY-----"
+            fcmToken:
+              type: string
+              description: Firebase Cloud Messaging token for push delivery.
+              example: "dQw4w9WgXcQ:APA91bF...xyz"
+            platform:
+              $ref: '#/components/schemas/Platform'
+            osVersion:
+              type: string
+              description: OS version string reported by the device.
+              example: "Android 14"
+            model:
+              type: string
+              description: Device model string.
+              example: "Pixel 8 Pro"
+            nonceB64:
+              type: string
+              description: Base64-encoded nonce used during pairing.
+              example: "QWxhZGRpbjpvcGVuIHNlc2FtZQ=="
+            exp:
+              type: integer
+              format: int64
+              description: Expiration time as UNIX epoch seconds.
+              example: 1730563200
+            createdAt:
+              type: integer
+              format: int64
+              description: Creation time as UNIX epoch seconds.
+              example: 1730562900
+            ttlSeconds:
+              type: integer
+              format: int64
+              minimum: 1
+              description: Time-to-live for the pairing in seconds.
+              example: 180
+    QrCodeClaims:
+      allOf:
+        - $ref: '#/components/schemas/IdentifiableUser'
+        - type: object
+          description: Runtime state of a device pairing flow.
+          required:
+            - exp
+            - jti
+          properties:
+            exp:
+              type: integer
+              format: int64
+              minimum: 1
+              description: Time-to-live for the pairing in seconds.
+              example: 180
+            jti:
+              type: string
+              format: uuid
+              description: jti
+              example: "4e2d7a7a-3b6a-4d5a-8b1a-2f1a9c0a1e2f"
+    ChallengePushMessage:
+      type: object
+      description: Data fields in push message.
+      required:
+        - challengeId
+        - type
+        - publicKey
+        - nonce
+        - ttl
+        - exp
+      properties:
+        challengeId:
+          type: string
+          format: uuid
+          description: Challenge identifier.
+          example: "8d8a4b2e-1a56-4a3a-8c08-9c3c5a2d5c01"
+        type:
+          $ref: '#/components/schemas/MessageType'
+        publicKey:
+          type: string
+          description: Device public key (PEM or JWK).
+          example: "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0B...\n-----END PUBLIC KEY-----"
+        nonce:
+          type: string
+          description: jti
+          example: "4e2d7a7a-3b6a-4d5a-8b1a-2f1a9c0a1e2f"
+        ttl:
+          type: integer
+          format: int64
+          minimum: 1
+          description: Expiration epochSeconds for the pairing in seconds.
+          example: 180
+        exp:
+          type: integer
+          format: int64
+          minimum: 1
+          description: Expiration epochSeconds for the pairing in seconds.
+          example: 180
+    EcgTestTokenClaims:
+      type: object
+      description: Jwt payload with ecgTest data.
+      required:
+        - testEcg
+      properties:
+        testEcg:
+          type: array
+          items:
+            type: number
+            format: float
+    EcgRefTokenClaims:
+      type: object
+      description: Jwt payload with ecgTest data.
+      required:
+        - refEcg
+      properties:
+        refEcg:
+          type: array
+          items:
+            type: array
+            items:
+              type: number
+              format: float
+    EcgPrediction:
+      allOf:
+        - $ref: '#/components/schemas/EcgTestTokenClaims'
+        - $ref: '#/components/schemas/EcgRefTokenClaims'
+        - type: object

@@ -1,0 +1,32 @@
+{
+  "name": "heartauth-e2e",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "contract:gen:external": "openapi-typescript contract/external.yml -o contract/generated/external.d.ts",
+    "contract:gen:internal": "openapi-typescript contract/internal.yml  -o contract/generated/internal.d.ts",
+    "contract:gen:admin": "openapi-typescript contract/admin.yml    -o contract/generated/admin.d.ts",
+    "contract:gen": "npm-run-all -s contract:gen:*",
+    "pretest:e2e": "npm-run-all -s contract:gen",
+    "test:e2e": "playwright test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@playwright/test": "^1.55.1",
+    "@redocly/cli": "^2.3.0",
+    "@types/node": "^24.6.2",
+    "@types/uuid": "^10.0.0",
+    "npm-run-all": "^4.1.5",
+    "openapi-typescript": "^7.9.1",
+    "openapi-typescript-codegen": "^0.29.0"
+  },
+  "dependencies": {
+    "@faker-js/faker": "^10.0.0",
+    "openapi-fetch": "^0.14.1",
+    "uuid": "^13.0.0"
+  }
+}
