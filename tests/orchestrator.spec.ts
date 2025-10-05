@@ -12,7 +12,6 @@ import {
   generateUuid,
   validateUUIDv4,
 } from "../utils/utils";
-import { components } from "../contract/generated/internal";
 
 test("createTenant -> registerUser -> loginUser", async () => {
   // create tenant and get its api key
