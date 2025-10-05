@@ -1,27 +1,37 @@
 name: Playwright Tests
 on:
   push:
-    branches: [ main, master ]
+    branches:
+      - master
   pull_request:
-    branches: [ main, master ]
+    branches:
+      - master
 jobs:
   test:
-    timeout-minutes: 60
+    timeout-minutes: 12
     runs-on: ubuntu-latest
+    env:
+      ADMIN_API_KEY:
+        zf+f6qrptxNmulKXbYPvropbIVmhHd7SYkKbOceaJA3+L1X67/HWkK7GQbr0g3u9
+        DJvJy/I3yWleKb/BbB3yykRE5FkIQwN8hCmjpXGUHIm19L2YwhNcTMlP7E+afI4/
+        YlNRb+ylLVmtoOX629NYdNRTwr4J7qBCPB5VPtk32W4=
+      INTERNAL_BASE_URL: https://hauth-internal.test.poziomk3.pl
+      ADMIN_BASE_URL: https://hauth-internal.test.poziomk3.pl
+      EXTERNAL_BASE_URL: https://hauth-external.test.poziomk3.pl
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version: lts/*
-    - name: Install dependencies
-      run: npm ci
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
-    - name: Run Playwright tests
-      run: npx playwright test
-    - uses: actions/upload-artifact@v4
-      if: ${{ !cancelled() }}
-      with:
-        name: playwright-report
-        path: playwright-report/
-        retention-days: 30
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - name: Install dependencies
+        run: npm ci
+      # - name: Install Playwright Browsers
+      #   run: npx playwright install --with-deps
+      - name: Run Playwright tests
+        run: npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
