@@ -1,0 +1,66 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "heartauth-core-e2e.fullname" . }}
+  labels:
+    app: {{ include "heartauth-core-e2e.fullname" . }}
+    {{- include "heartauth-core-e2e.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.schedule | quote }}
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: {{ include "heartauth-core-e2e.fullname" . }}
+            {{- include "heartauth-core-e2e.labels" . | nindent 12 }}
+          {{- with .Values.podAnnotations }}
+          annotations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: heartauth-core-e2e
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
+              {{- $hasEnv := or .Values.env .Values.secretEnv }}
+              {{- if $hasEnv }}
+              env:
+                {{- if .Values.env }}
+                  {{- if kindIs "map" .Values.env }}
+                    {{- range $k, $v := .Values.env }}
+                - name: {{ $k }}
+                  value: {{ $v | quote }}
+                    {{- end }}
+                  {{- else }}
+                    {{- toYaml .Values.env | nindent 16 }}
+                  {{- end }}
+                {{- end }}
+
+                {{- if .Values.secretEnv }}
+                  {{- $defaultSecret := (include "heartauth-core-e2e.fullname" .) -}}
+                  {{- if and (hasKey .Values "secret") (kindIs "map" .Values.secret) (hasKey .Values.secret "name") -}}
+                    {{- $defaultSecret = default $defaultSecret .Values.secret.name -}}
+                  {{- else if and (hasKey .Values "secret") (kindIs "string" .Values.secret) -}}
+                    {{- $defaultSecret = .Values.secret -}}
+                  {{- end }}
+                  {{- range $name, $ref := .Values.secretEnv }}
+                - name: {{ $name }}
+                  valueFrom:
+                    secretKeyRef:
+                      {{- if kindIs "map" $ref }}
+                      name: {{ $ref.name }}
+                      key: {{ $ref.key }}
+                      {{- else }}
+                      name: {{ $defaultSecret }}
+                      key: {{ $ref }}
+                      {{- end }}
+                  {{- end }}
+                {{- end }}
+              {{- end }}
+
+              resources:
+                {{- toYaml .Values.resources | nindent 16 }}

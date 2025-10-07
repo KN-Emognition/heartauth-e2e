@@ -1,0 +1,59 @@
+# helm template ./helm -f helm/values.yaml > helm/rendered/core.yaml
+namespaceOverride:
+fullnameOverride: heartauth-core-e2e
+
+image:
+  repository: poziomk3/heartauth-core-e2e
+  tag: v0.1.0
+  pullPolicy: IfNotPresent
+
+replicas: 1
+
+schedule: 0 * * * * 
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+probes:
+  port: 9000
+  readiness:
+    path: /health/ready
+    initialDelaySeconds: 60
+    periodSeconds: 10
+  liveness:
+    path: /health/live
+    initialDelaySeconds: 60
+    periodSeconds: 10
+
+resources:
+  requests:
+    cpu: 150m
+    memory: 600Mi
+  limits:
+    cpu: 500m
+    memory: 2Gi
+
+env:
+  INTERNAL_BASE_URL: http://localhost:8080
+  ADMIN_BASE_URL: http://localhost:8080
+  EXTERNAL_BASE_URL: http://localhost:8080
+
+secretEnv:
+  ADMIN_API_KEY: ADMIN_API_KEY
+secret:
+  name: heartauth-core-e2e-secrets
+
+realm:
+  enabled: true
+  importOnStartup: true
+  importOverride: true
+  useExistingConfigMap: false
+  json: |
+    {
+      "realm": "myrealm",
+      "enabled": true,
+      "users": [],
+      "clients": []
+    }
