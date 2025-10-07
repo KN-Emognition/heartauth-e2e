@@ -12,16 +12,14 @@ import {
   generateUuid,
   validateUUIDv4,
 } from "../utils/utils";
+import { faker } from "@faker-js/faker";
 
 test("createTenant -> registerUser -> loginUser", async () => {
   console.log("🚀 Starting test: createTenant -> registerUser -> loginUser");
-  console.log(process.env.ADMIN_API_KEY);
   // create tenant and get its api key
   const admin = createAdminClient({
     additionalHeaders: createApiKey(process.env.ADMIN_API_KEY!),
   });
-
-  console.log("ADMIN_BASE_URL effective:", process.env.ADMIN_BASE_URL);
 
   console.log("📡 Sending request: create tenant");
   const createTenantResponse = await admin.POST("/admin/v1/tenants");

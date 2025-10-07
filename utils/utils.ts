@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { validate as uuidValidate, version as uuidVersion } from "uuid";
-import { fa, faker } from "@faker-js/faker";
+import { faker } from "@faker-js/faker";
 import { components } from "../contract/generated/external";
 import { generateP256 } from "./keyGen";
 
