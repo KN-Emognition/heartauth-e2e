@@ -93,7 +93,7 @@ test.describe
 
     const K = 3; // users to provision
     const N = 10; // total attempts (balanced success/failure)
-    const ECG_LEN = 5000;
+    const ECG_LEN = 6000;
 
     console.log("🚀 Starting: provision tenant & users");
 
@@ -105,6 +105,8 @@ test.describe
     expect(createTenantResponse.data?.apiKey, "tenant apiKey").toBeTruthy();
 
     const internalApiKey = createTenantResponse.data!.apiKey;
+    console.log("tenantid:", createTenantResponse.data!.id);
+    console.log("internalApiKey:", internalApiKey);
     const internal = createInternalClientInstance({ internalApiKey });
     const external = createExternalClientInstance();
 
@@ -115,7 +117,6 @@ test.describe
       refEcg: number[];
     }> = [];
 
-    // --- create & pair K users ---
     for (let i = 0; i < K; i++) {
       await test.step(`Create & pair user ${i + 1}/${K}`, async () => {
         const { testUserId, createPairingResponse } = await createPairing({
@@ -156,6 +157,7 @@ test.describe
         ).toBe(204);
 
         users.push({ testUserId, pairingJwt, privateKeyPem, refEcg });
+        console.log(JSON.stringify({ testUserId, privateKeyPem }));
       });
     }
 

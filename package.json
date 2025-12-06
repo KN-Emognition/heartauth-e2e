@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "contract:gen:external": "openapi-typescript contract/external.yml -o contract/generated/external.d.ts",
-    "contract:gen:internal": "openapi-typescript contract/internal.yml  -o contract/generated/internal.d.ts",
+    "contract:gen:mobile": "openapi-typescript contract/mobile.yml -o contract/generated/mobile.d.ts",
+    "contract:gen:tenants": "openapi-typescript contract/tenants.yml  -o contract/generated/tenants.d.ts",
     "contract:gen:admin": "openapi-typescript contract/admin.yml    -o contract/generated/admin.d.ts",
     "contract:gen": "npm-run-all -s contract:gen:*",
     "pretest:e2e": "npm-run-all -s contract:gen",

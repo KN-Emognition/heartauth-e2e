@@ -13,9 +13,10 @@ interface CreatePairingProps {
 }
 export const createPairing = async ({ internal }: CreatePairingProps) => {
   const testUserId = faker.string.uuid();
-  const createPairingResponse = await internal.POST("/internal/v1/pairing", {
+  const createPairingResponse = await internal.POST("/tenants/v1/pairing", {
     body: {
       userId: testUserId,
+      username: `testuser_${testUserId}`,
       ttlSeconds: 120,
     },
   });
@@ -34,7 +35,7 @@ export const initPairing = async ({
   pairingJwt,
 }: InitPairingProps) => {
   const { initPairingRequest, privateKeyPem } = generateInitPairingRequest();
-  const initPairingResponse = await external.POST("/external/v1/pairing/init", {
+  const initPairingResponse = await external.POST("/mobile/v1/pairing/init", {
     body: initPairingRequest,
     headers: createBearer(pairingJwt),
   });
@@ -59,13 +60,13 @@ export const completePairing = async ({
   privateKeyPem,
 }: CompletePairingProps) => {
   const completePairingResponse = await external.POST(
-    "/external/v1/pairing/complete",
+    "/mobile/v1/pairing/complete",
     {
       body: await generateCompletePairingRequest({
         nonce,
         refEcg,
         privateKeyPem,
-        recipientPubKey: await getPublicKey(external)
+        recipientPubKey: await getPublicKey(external),
       }),
       headers: createBearer(pairingJwt),
     }

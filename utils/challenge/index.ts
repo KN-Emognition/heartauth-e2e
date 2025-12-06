@@ -13,7 +13,7 @@ export const createChallenge = async ({
   testUserId,
 }: CreateChallengeProps) => {
   const createChallengeResponse = await internal.POST(
-    "/internal/v1/challenge",
+    "/tenants/v1/challenge",
     {
       body: {
         userId: testUserId,
@@ -42,7 +42,7 @@ export const completeChallenge = async ({
   challengeId,
 }: CompleteChallengeProps) => {
   const completeChallengeResponse = await external.POST(
-    "/external/v1/challenge/{id}/complete",
+    "/mobile/v1/challenge/{id}/complete",
     {
       body: await generateCompleteChallengeRequest({
         nonce,

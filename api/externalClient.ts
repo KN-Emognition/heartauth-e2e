@@ -1,5 +1,5 @@
 import createClient from "openapi-fetch";
-import type { paths as ExternalPaths } from "../contract/generated/external";
+import type { paths as ExternalPaths } from "../contract/generated/mobile";
 
 export type ExternalClient = ReturnType<typeof createExternalClient>;
 

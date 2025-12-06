@@ -1,5 +1,5 @@
 import createClient from "openapi-fetch";
-import type { paths as InternalPaths } from "../contract/generated/internal";
+import type { paths as InternalPaths } from "../contract/generated/tenants";
 
 export type InternalClient = ReturnType<typeof createInternalClient>;
 

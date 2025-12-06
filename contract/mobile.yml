@@ -36,7 +36,7 @@ paths:
       responses:
         '200':
           description: Application is healthy
-  /external/v1/pairing/init:
+  /mobile/v1/pairing/init:
     post:
       operationId: initPairing
       tags:
@@ -58,7 +58,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InitPairingResponse'
-  /external/v1/pairing/complete:
+  /mobile/v1/pairing/complete:
     post:
       operationId: completePairing
       tags:
@@ -77,7 +77,7 @@ paths:
         '204':
           description: Pairing outcome recorded.
 
-  /external/v1/challenge/{id}/complete:
+  /mobile/v1/challenge/{id}/complete:
     post:
       operationId: completeChallenge
       tags:
